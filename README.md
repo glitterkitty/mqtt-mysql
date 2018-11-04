@@ -46,15 +46,44 @@ So, whe I stumbled upon the original repo, it didn't run at first, or didn't run
 
 ## Notes:
 
+### packages needed:
 On my system I had to additionally install packages, modules, etc.:
 
     pip2 install paho-mqtt
     sudo apt-get install python-mysqldb
     (maybe more, it was a hassle...)
     
-I have tested it only with flat mqtt-messages, not with json-data
+### testing:
+I have tested it only with flat mqtt-messages, not with json-data.<br>
 
+Setting M_LOGLEVEL = 2 in mqtt-mysql.py gives you useful information when using for the first time, e.g. if the database connection works, the mqtt broker can be connected and whether mqtt data is coming in or not. You can issue the following command on another terminal to produce test-data:
+
+    mosquitto_pub -h <your_mqtt_broker> -t <your_mqtt_topic> -m test
     
+    
+## Running as a service:
+
+After testing and copying all the files to `/srv/mqtt-mysql/` as user root, create a service-file with `sudo nano /etc/systemd/system/mqtt-mysl.service`:
+
+```[Unit]
+Description=mqtt-mysql service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /srv/mqtt-mysql/mqtt-mysql.py
+
+[Install]
+WantedBy=multi-user.target
+```
+Then
+- enable service: `sudo systemctl enable mqtt-mysl`
+- start service: `systemctl start mqtt-mysl`
+- check service: `systemctl status mqtt-mysl` and `sudo journalctl -xe | grep mqtt-mysql`
+
+Usign a database-viewer (adminer), you can checked the database for incoming data.
+
+
     
 ## The Grafana-Part:
   - yet untested - t.b.h.: I don't even know if this will work this way :)
