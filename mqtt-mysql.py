@@ -1,10 +1,11 @@
 #!/usr/bin/python
 #
 # mqtt-mysql by Theo Arends
+# Modified 2018 by glitterkitty
 #
 # Provides MQTT MySql service
 #
-# Execute: mqtt-mysql &
+# Execute: mqtt-mysql.py &
 #
 # Needs paho.mqtt.client
 #   - git clone http://git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.python.git
@@ -21,40 +22,43 @@
 #
 # **** Start of user configuration values
 
-broker = "localhost"       # MQTT broker ip address or name
-broker_port = 1883         # MQTT broker port
+broker      = "my_broker"   # MQTT broker ip address or name
+broker_port = 1883          # MQTT broker port
 
-sub_prefix = "mysql"       # Own subscribe topic
-pub_prefix = "stat"        # General publish topic
+sub_prefix = "solar/#"   # Own subscribe topic
+pub_prefix = ""          # General publish topic, disabled when empty
 
-db_hostname = "localhost"  # MySQL host ip address or name
-db_database = "mqtt"       # MySQL database name
-db_username = "mqttuser"   # MySQL database user name
-db_password = "mqttpass"   # MySQL database password
+db_hostname = "db_host"          # MySQL host ip address or name
+db_database = "mqtt_data"       # MySQL database name
+db_username = "mqtt_user"  # MySQL database user name
+db_password = "uwannaknowheh?"   # MySQL database password
+
 
 # **** End of user configuration values
 
 M_VERSION = "1.1"
+M_LOGLEVEL = 0                 # Print messages: 0 - none, 1 - Startup, 2 - MQTT and MySQL, 3 - All
 
-M_INFO = 0                 # Print messages: 0 - none, 1 - Startup, 2 - Serial, 3 - All
-F_UNIQUE = 0               # 1 = Output no topic name if only one topic type is found
 
 import paho.mqtt.client as mqtt
 import MySQLdb as mdb
 import time
 import datetime
 
-S_UNIQUE = F_UNIQUE
 
 def my_info(type, message):
-  if M_INFO > type:
+  if type <= M_LOGLEVEL:
     print(message)
+
+
 
 def log_message(msg):
   with con:
     cur = con.cursor()
     cur.execute("INSERT INTO messages (topic , qos, message) VALUES (%s, %s, %s)", (msg.topic, msg.qos, msg.payload))
     my_info(2, "MySQL INSERT INTO messages (topic_id , qos, message_id) VALUES ("+str(msg.topic)+", "+str(msg.qos)+", "+str(msg.payload)+")")
+
+
 
 def get_setting(setting, default):
   state = default
@@ -68,23 +72,37 @@ def get_setting(setting, default):
       cur.execute("INSERT INTO settings (setting, state) VALUES (%s, %s)", (setting, default))
   return int(state)
 
+
+
+
 def update_setting(setting, state):
   with con:
     cur = con.cursor()
     cur.execute("UPDATE settings SET state = %s WHERE setting = %s", (state, setting))
   return int(state)
 
+
+
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-  my_info(0, "\nMQTT-MySql service connected with result code "+str(rc))
+    
+    my_info(1, "MQTT-MySql service connected with result code "+str(rc))
 
-# Subscribing in on_connect() means that if we lose the connection and
-# reconnect then subscriptions will be renewed.
-  client.subscribe([("#",0),("/#",0),("$SYS/broker/log/#",0)])
+    # Subscribing in on_connect() means that if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    
+    ## why do i connect to EVRYTHING? 
+    ##client.subscribe([("#",0),("/#",0),("$SYS/broker/log/#",0)])
+
+    client.subscribe( sub_prefix,0)
+
+
+
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-  global S_UNIQUE
+
 
   my_info(2, "MQTT subscribed |"+msg.topic+"|"+str(msg.qos)+"|"+str(msg.payload)+"|")
   part = msg.topic.split("/",2)  # mysql/select/%
@@ -179,7 +197,11 @@ def on_message(client, userdata, msg):
   else:
     log_message(msg)
 
-my_info(0, "MQTT mysql service.")
+
+
+
+
+my_info(1, "MQTT mysql service "+ M_VERSION)
 
 mainloop = 1
 while mainloop == 1:
@@ -192,24 +214,33 @@ while mainloop == 1:
     try:
       con = mdb.connect(db_hostname, db_username, db_password, db_database)
       dc = 0
+      my_info(1, "Database connected")
+      
     except:
-      my_info(0, "Warning: No database (connection) found. Retry in one minute.")
+      my_info(1, "Warning: No database (connection) found. Retry in one minute.")
       time.sleep(60)
       pass
 
-  S_UNIQUE = get_setting("unique", F_UNIQUE)
 
   rc = 1
   while rc == 1:
     try:
       client.connect(broker, broker_port)
       rc = 0
+      my_info(1, "MQTT-Broker connected")
+      
     except:
-      my_info(0, "Warning: No broker found. Retry in one minute.")
+      my_info(1, "Warning: No broker found. Retry in one minute.")
       time.sleep(60)
       pass
 
-  client.publish(pub_prefix+"/MySql/MESSAGE", "Connection with broker established.")
+
+
+  if pub_prefix:
+    my_info(1, "Publishing on "+pub_prefix)
+    client.publish(pub_prefix+"/MySql/MESSAGE", "Connection with broker established.")
+
+
 
   while rc == 0:
     try:
@@ -217,7 +248,12 @@ while mainloop == 1:
     except:
       rc = 1
 
+
+
   print("Warning: Connection error - Restarting.")
 
-  if M_INFO > 0:
+
+
+  # keep running when not debugging
+  if M_LOGLEVEL > 0:
     mainloop = 0
