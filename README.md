@@ -2,6 +2,7 @@
 MQTT mysql client and server
 
 Copyright © 2015 Theo Arends
+
 Modified 2018 by glitterkitty
 
 
