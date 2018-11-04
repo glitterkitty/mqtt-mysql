@@ -1,5 +1,7 @@
-CREATE DATABASE mqtt;
-USE mqtt;
+
+
+CREATE DATABASE mqtt_data;
+USE mqtt_data;
 
 DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
@@ -14,4 +16,9 @@ CREATE TABLE settings (
   setting     varchar(8) NOT NULL PRIMARY KEY,
   state       tinyint(1) NOT NULL,
   timestamp   timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8;
+
+
+CREATE USER mqtt_user@localhost IDENTIFIED BY 'password';
+GRANT ALL privileges ON mqtt_data.* TO mqtt_user ;
+
