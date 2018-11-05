@@ -86,7 +86,21 @@ Usign a database-viewer (adminer), you can checked the database for incoming dat
 
     
 ## The Grafana-Part:
-  - yet untested - t.b.h.: I don't even know if this will work this way :)
+  - ~~yet untested - t.b.h.: I don't even know if this will work this way :)~~
+  - setup mysql as data-source
+  - add a panel using that data-source for metrics
+  - edit sql-query, e.g.:
+  ```
+    SELECT
+    UNIX_TIMESTAMP(timestamp) as time_sec,
+    convert(message,DOUBLE) as value,
+    "Voltage Battery" as metric
+    FROM messages
+    WHERE topic="solar/battery/V"
+    ORDER BY timestamp ASC 
+```
+
+  - setup axes, title, etc.
    
    
 ## Todo:
