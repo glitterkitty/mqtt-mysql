@@ -8,7 +8,7 @@ Modified 2018 by glitterkitty
 ## Motivation for this fork:
 Having a (really) small solar setup with an epever ls1024b charge-controller conneted via modbus to a wemos-d1-mini publishing data to a mosquitto mqtt-broker on an odroid-c2 running ubuntu 16.04 sitting in a small wooden box I made myself using handtools only, I wanted what ev'rybody and his dog wants: to get the mqtt-data to my mariaDB database to be able to maybe use it later on in grafana and/or the like.
 
-So, whe I stumbled upon the original repo, it didn't run at first, or didn't run the way I wanted, or was too unverbose for my liking, plus there was no information on how to use this. So I modified the code, wrote down this readme and setup a fork, in case someone else might wanna use this and got stuck with the original code.
+So, when I stumbled upon the original repo, it didn't run at first, or didn't run the way I wanted, or was too unverbose for my liking, plus there was no information on how to use this. So I modified the code, wrote down this readme and setup a fork, in case someone else might wanna use this and got stuck with the original code.
 
 
 ## Prerequisites:
