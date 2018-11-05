@@ -104,7 +104,7 @@ Usign a database-viewer (adminer), you can checked the database for incoming dat
    
    
 ## Todo:
- - I think, the database scheme ain't that sophisticated and needs some reworking
+ - I think, the database structure ain't that sophisticated and needs some reworking
  - more to come...
  
 ## 
