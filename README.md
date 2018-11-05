@@ -88,6 +88,10 @@ Usign a database-viewer (adminer), you can checked the database for incoming dat
 ## The Grafana-Part:
   - yet untested - t.b.h.: I don't even know if this will work this way :)
    
+   
+## Todo:
+ - I think, the database scheme ain't that sophisticated and needs some reworking
+ - more to come...
  
 ## 
 Good Luck
